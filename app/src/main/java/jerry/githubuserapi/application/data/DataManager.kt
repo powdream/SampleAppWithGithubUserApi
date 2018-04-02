@@ -1,15 +1,24 @@
 package jerry.githubuserapi.application.data
 
-import org.eclipse.egit.github.core.User
-import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.read
+import kotlin.concurrent.write
 
 class DataManager {
-    private val _authenticatedUser: AtomicReference<User> = AtomicReference()
+    @Volatile
+    private var _sessionData: SessionData = SessionData()
 
-    var authenticatedUser: User?
-        get() = _authenticatedUser.get()
-        set(value) = _authenticatedUser.set(value)
+    private val sessionDataLock: ReentrantReadWriteLock = ReentrantReadWriteLock()
 
-    val isSignedIn: Boolean
-        get() = authenticatedUser != null
+    /**
+     * immutable [SessionData].
+     */
+    val sessionData: SessionData
+        get() = sessionDataLock.read { _sessionData }
+
+    fun updateSessionData(sessionDataGenerator: (SessionData) -> SessionData) {
+        sessionDataLock.write {
+            _sessionData = sessionDataGenerator(_sessionData)
+        }
+    }
 }

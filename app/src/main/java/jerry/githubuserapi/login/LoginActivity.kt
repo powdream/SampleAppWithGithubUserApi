@@ -7,6 +7,7 @@ import jerry.githubuserapi.BaseActivity
 import jerry.githubuserapi.BuildConfig
 import jerry.githubuserapi.R
 import jerry.githubuserapi.application.dataManager
+import jerry.githubuserapi.application.model.ImmutableUser
 import jerry.githubuserapi.login.event.LoginTrialEvent
 import jerry.githubuserapi.login.model.LoginFormSnapshot
 import jerry.githubuserapi.login.model.LoginTrialResult
@@ -105,7 +106,9 @@ class LoginActivity : BaseActivity() {
     @MainThread
     private fun onLoginSucceeded(loginSuccess: LoginTrialResult.Success) {
         // Set the session information and exit from this activity.
-        dataManager.authenticatedUser = loginSuccess.user
+        dataManager.updateSessionData {
+            it.copy(authenticatedUser = ImmutableUser(loginSuccess.user))
+        }
         startActivitySimply<AllUserActivity>()
         finish()
         if (BuildConfig.DEBUG) {

@@ -13,7 +13,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         // Route activities
-        if (!dataManager.isSignedIn) {
+        if (!dataManager.sessionData.isSignedIn) {
             startActivitySimply<LoginActivity>()
             finish()
         } else {
