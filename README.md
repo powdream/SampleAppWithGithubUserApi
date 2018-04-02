@@ -33,10 +33,10 @@ For more information, please refer to <http://unlicense.org>
 
 ## Dependencies
 
-### GitHub Java API (org.eclipse.egit.github.core)
+### GitHub API for Java
 
-* https://github.com/eclipse/egit-github/tree/master/org.eclipse.egit.github.core
-* Eclipse Public License 1.0
+* http://github-api.kohsuke.org/
+* The MIT license
 
 ### EventBus
 
