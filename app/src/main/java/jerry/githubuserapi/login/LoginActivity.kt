@@ -2,27 +2,34 @@ package jerry.githubuserapi.login
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.os.AsyncTask
 import android.os.Bundle
+import android.support.annotation.MainThread
 import android.view.View
+import android.widget.Toast
 import jerry.githubuserapi.BaseActivity
+import jerry.githubuserapi.BuildConfig
 import jerry.githubuserapi.R
+import jerry.githubuserapi.application.dataManager
 import jerry.githubuserapi.login.event.LoginTrialEvent
 import jerry.githubuserapi.login.model.LoginFormSnapshot
+import jerry.githubuserapi.login.model.LoginTrialResult
+import jerry.githubuserapi.login.repository.AuthenticatedUserRepository
 import jerry.githubuserapi.login.viewcontroller.LoginFormViewController
 import jerry.githubuserapi.login.viewcontroller.SignInButtonViewController
 import kotlinx.android.synthetic.main.activity_login.*
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * A login screen that offers login via email/password.
  */
 class LoginActivity : BaseActivity() {
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
-    private var mAuthTask: UserLoginTask? = null
+    private val loginJob: AtomicReference<Job> = AtomicReference()
 
     private lateinit var loginFormViewController: LoginFormViewController
     private lateinit var signInButtonViewController: SignInButtonViewController
@@ -51,6 +58,11 @@ class LoginActivity : BaseActivity() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onLoginTrialEventReceived(event: LoginTrialEvent) {
+        if (loginJob.get() != null) {
+            // There is a running log-in job.
+            return
+        }
+
         val snapshot = event.loginFormSnapshot
         val validationResult = snapshot.validate()
         when {
@@ -58,16 +70,46 @@ class LoginActivity : BaseActivity() {
                 loginFormViewController.onEmailAddressInvalid(validationResult.errorResId)
             validationResult.isPasswordFormatInvalid ->
                 loginFormViewController.onPasswordInvalid(validationResult.errorResId)
-            else -> attemptLogin(snapshot)
+            else -> if (loginJob.compareAndSet(null, attemptLogin(snapshot))) {
+                showProgress(true)
+            }
         }
     }
 
-    /**
-     * Attempts to sign in or register the account specified by the login form.
-     * If there are form errors (invalid email, missing fields, etc.), the
-     * errors are presented and no actual login attempt is made.
-     */
-    private fun attemptLogin(snapshot: LoginFormSnapshot) {
+    @MainThread
+    private fun attemptLogin(snapshot: LoginFormSnapshot): Job {
+        val job = launch(UI) {
+            val (userId, password) = snapshot
+            val loginTrialResult = AuthenticatedUserRepository()
+                .getAuthenticatedUser(CommonPool, userId, password)
+                .await()
+            when (loginTrialResult) {
+                is LoginTrialResult.Success -> {
+                    this@LoginActivity.dataManager.authenticatedUser = loginTrialResult.user
+                    if (BuildConfig.DEBUG) {
+                        Toast
+                            .makeText(
+                                this@LoginActivity,
+                                R.string.sign_in_success,
+                                Toast.LENGTH_SHORT
+                            )
+                            .show()
+                    }
+                }
+                is LoginTrialResult.Failure -> {
+                    loge(loginTrialResult.cause) { "Login failure: userId=$userId, password=$password" }
+                    loginFormViewController.onPasswordInvalid(R.string.error_incorrect_password)
+                }
+            }
+            showProgress(false)
+        }
+
+        // Set-up to clear ``loginJob`` on the job finished.
+        job.invokeOnCompletion(onCancelling = true) {
+            loginJob.compareAndSet(job, null)
+        }
+
+        return job
     }
 
     /**
@@ -99,61 +141,5 @@ class LoginActivity : BaseActivity() {
                     login_progress.visibility = if (show) View.VISIBLE else View.GONE
                 }
             })
-    }
-
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    inner class UserLoginTask internal constructor(
-        private val mEmail: String,
-        private val mPassword: String
-    ) : AsyncTask<Void, Void, Boolean>() {
-
-        override fun doInBackground(vararg params: Void): Boolean? {
-            // TODO: attempt authentication against a network service.
-
-            try {
-                // Simulate network access.
-                Thread.sleep(2000)
-            } catch (e: InterruptedException) {
-                return false
-            }
-
-            return DUMMY_CREDENTIALS
-                .map { it.split(":") }
-                .firstOrNull { it[0] == mEmail }
-                ?.let {
-                    // Account exists, return true if the password matches.
-                    it[1] == mPassword
-                }
-                    ?: true
-        }
-
-        override fun onPostExecute(success: Boolean?) {
-            mAuthTask = null
-            showProgress(false)
-
-            if (success!!) {
-                finish()
-            } else {
-                password.error = getString(R.string.error_incorrect_password)
-                password.requestFocus()
-            }
-        }
-
-        override fun onCancelled() {
-            mAuthTask = null
-            showProgress(false)
-        }
-    }
-
-    companion object {
-
-        /**
-         * A dummy authentication store containing known user names and passwords.
-         * TODO: remove after connecting to a real authentication system.
-         */
-        private val DUMMY_CREDENTIALS = arrayOf("foo@example.com:hello", "bar@example.com:world")
     }
 }
