@@ -4,10 +4,18 @@ import org.eclipse.egit.github.core.User
 import java.io.IOException
 
 sealed class LoginTrialResult {
-    class Success(val user: User) : LoginTrialResult()
+    data class Success(
+        val user: User,
+        override val userId: String,
+        override val password: String
+    ) : LoginTrialResult()
+
     data class Failure(
         val cause: IOException,
-        val userId: String,
-        val password: String
+        override val userId: String,
+        override val password: String
     ) : LoginTrialResult()
+
+    abstract val userId: String
+    abstract val password: String
 }

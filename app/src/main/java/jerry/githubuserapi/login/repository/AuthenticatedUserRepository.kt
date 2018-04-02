@@ -17,7 +17,7 @@ class AuthenticatedUserRepository {
     ): Deferred<LoginTrialResult> = async(context = context, start = CoroutineStart.LAZY) {
         val userService = UserService(GitHubClient().setCredentials(userId, password))
         try {
-            LoginTrialResult.Success(userService.user)
+            LoginTrialResult.Success(userService.user, userId, password)
         } catch (e: IOException) {
             LoginTrialResult.Failure(e, userId, password)
         }

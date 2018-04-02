@@ -6,6 +6,7 @@ import android.widget.Toast
 import jerry.githubuserapi.BaseActivity
 import jerry.githubuserapi.BuildConfig
 import jerry.githubuserapi.R
+import jerry.githubuserapi.application.data.SignedIn
 import jerry.githubuserapi.application.dataManager
 import jerry.githubuserapi.application.model.ImmutableUser
 import jerry.githubuserapi.login.event.LoginTrialEvent
@@ -21,6 +22,7 @@ import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.launch
+import org.eclipse.egit.github.core.client.GitHubClient
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.util.concurrent.atomic.AtomicReference
@@ -107,7 +109,13 @@ class LoginActivity : BaseActivity() {
     private fun onLoginSucceeded(loginSuccess: LoginTrialResult.Success) {
         // Set the session information and exit from this activity.
         dataManager.updateSessionData {
-            it.copy(authenticatedUser = ImmutableUser(loginSuccess.user))
+            val (user, userId, password) = loginSuccess
+            it.copy(
+                currentUser = SignedIn(
+                    ImmutableUser(user),
+                    GitHubClient().setCredentials(userId, password)
+                )
+            )
         }
         startActivitySimply<AllUserActivity>()
         finish()
