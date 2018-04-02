@@ -14,6 +14,8 @@ import jerry.githubuserapi.login.repository.AuthenticatedUserRepository
 import jerry.githubuserapi.login.viewcontroller.LoginFormViewController
 import jerry.githubuserapi.login.viewcontroller.LoginProgressViewController
 import jerry.githubuserapi.login.viewcontroller.SignInButtonViewController
+import jerry.githubuserapi.userlist.AllUserActivity
+import jerry.githubuserapi.util.intent.startActivitySimply
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.android.UI
@@ -104,6 +106,7 @@ class LoginActivity : BaseActivity() {
     private fun onLoginSucceeded(loginSuccess: LoginTrialResult.Success) {
         // Set the session information and exit from this activity.
         dataManager.authenticatedUser = loginSuccess.user
+        startActivitySimply<AllUserActivity>()
         finish()
         if (BuildConfig.DEBUG) {
             Toast.makeText(this, R.string.sign_in_success, Toast.LENGTH_SHORT).show()
