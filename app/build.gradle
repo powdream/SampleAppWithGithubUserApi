@@ -47,6 +47,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:${kotlin_coroutine_version}"
 
     implementation "com.android.support:appcompat-v7:${androidSupportLibVersion}"
+    implementation "com.android.support:design:${androidSupportLibVersion}"
     implementation "com.android.support.constraint:constraint-layout:${constraintLayoutLibVersion}"
     implementation 'com.android.support:multidex:1.0.3'
 
