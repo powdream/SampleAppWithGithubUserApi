@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/powdream/SampleAppWithGithubUserApi.png?branch=master)](https://travis-ci.org/powdream/SampleAppWithGithubUserApi) [![Awesome Kotlin Badge](https://kotlin.link/awesome-kotlin.svg)](https://github.com/KotlinBy/awesome-kotlin)
+[![Build Status](https://travis-ci.org/powdream/SampleAppWithGithubUserApi.svg?branch=master)](https://travis-ci.org/powdream/SampleAppWithGithubUserApi) [![Awesome Kotlin Badge](https://kotlin.link/awesome-kotlin.svg)](https://github.com/KotlinBy/awesome-kotlin)
 
 # Sample app using github v3 api
 
