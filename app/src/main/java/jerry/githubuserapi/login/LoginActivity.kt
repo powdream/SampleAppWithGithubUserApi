@@ -4,35 +4,62 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.os.AsyncTask
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
-import android.text.TextUtils
 import android.view.View
-import android.view.inputmethod.EditorInfo
+import jerry.githubuserapi.BaseActivity
 import jerry.githubuserapi.R
+import jerry.githubuserapi.login.event.LoginTrialEvent
+import jerry.githubuserapi.login.model.LoginFormSnapshot
+import jerry.githubuserapi.login.viewcontroller.LoginFormViewController
+import jerry.githubuserapi.login.viewcontroller.SignInButtonViewController
 import kotlinx.android.synthetic.main.activity_login.*
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 /**
  * A login screen that offers login via email/password.
  */
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : BaseActivity() {
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private var mAuthTask: UserLoginTask? = null
 
+    private lateinit var loginFormViewController: LoginFormViewController
+    private lateinit var signInButtonViewController: SignInButtonViewController
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
-        // Set up the login form.
-        password.setOnEditorActionListener { _, id, _ ->
-            if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
-                attemptLogin()
-                return@setOnEditorActionListener true
-            }
-            false
-        }
 
-        email_sign_in_button.setOnClickListener { attemptLogin() }
+        loginFormViewController = LoginFormViewController(
+            activityScopeEventBus,
+            findViewById(R.id.email),
+            findViewById(R.id.password)
+        )
+        signInButtonViewController = SignInButtonViewController(
+            activityScopeEventBus,
+            findViewById(R.id.email_sign_in_button),
+            loginFormViewController
+        )
+        activityScopeEventBus.register(this)
+    }
+
+    override fun onDestroy() {
+        activityScopeEventBus.unregister(this)
+        super.onDestroy()
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onLoginTrialEventReceived(event: LoginTrialEvent) {
+        val snapshot = event.loginFormSnapshot
+        val validationResult = snapshot.validate()
+        when {
+            validationResult.isEmailAddressFormatInvalid ->
+                loginFormViewController.onEmailAddressInvalid(validationResult.errorResId)
+            validationResult.isPasswordFormatInvalid ->
+                loginFormViewController.onPasswordInvalid(validationResult.errorResId)
+            else -> attemptLogin(snapshot)
+        }
     }
 
     /**
@@ -40,56 +67,8 @@ class LoginActivity : AppCompatActivity() {
      * If there are form errors (invalid email, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
-    private fun attemptLogin() {
-        if (mAuthTask != null) {
-            return
-        }
-
-        // Reset errors.
-        email.error = null
-        password.error = null
-
-        // Store values at the time of the login attempt.
-        val emailStr = email.text.toString()
-        val passwordStr = password.text.toString()
-
-        var cancel = false
-        var focusView: View? = null
-
-        // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(passwordStr) && !isPasswordValid(passwordStr)) {
-            password.error = getString(R.string.error_invalid_password)
-            focusView = password
-            cancel = true
-        }
-
-        // Check for a valid email address.
-        if (TextUtils.isEmpty(emailStr)) {
-            email.error = getString(R.string.error_field_required)
-            focusView = email
-            cancel = true
-        } else if (!isEmailValid(emailStr)) {
-            email.error = getString(R.string.error_invalid_email)
-            focusView = email
-            cancel = true
-        }
-
-        if (cancel) {
-            // There was an error; don't attempt login and focus the first
-            // form field with an error.
-            focusView?.requestFocus()
-        } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
-            showProgress(true)
-            mAuthTask = UserLoginTask(emailStr, passwordStr)
-            mAuthTask!!.execute(null as Void?)
-        }
+    private fun attemptLogin(snapshot: LoginFormSnapshot) {
     }
-
-    private fun isEmailValid(email: String): Boolean = "@" in email
-
-    private fun isPasswordValid(password: String): Boolean = password.length > 4
 
     /**
      * Shows the progress UI and hides the login form.
