@@ -4,8 +4,7 @@ import jerry.githubuserapi.login.model.LoginTrialResult
 import kotlinx.coroutines.experimental.CoroutineStart
 import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
-import org.eclipse.egit.github.core.client.GitHubClient
-import org.eclipse.egit.github.core.service.UserService
+import org.kohsuke.github.GitHub
 import java.io.IOException
 import kotlin.coroutines.experimental.CoroutineContext
 
@@ -15,9 +14,9 @@ class AuthenticatedUserRepository {
         userId: String,
         password: String
     ): Deferred<LoginTrialResult> = async(context = context, start = CoroutineStart.LAZY) {
-        val userService = UserService(GitHubClient().setCredentials(userId, password))
         try {
-            LoginTrialResult.Success(userService.user, userId, password)
+            val github = GitHub.connectUsingPassword(userId, password)
+            LoginTrialResult.Success(github.myself, github)
         } catch (e: IOException) {
             LoginTrialResult.Failure(e, userId, password)
         }

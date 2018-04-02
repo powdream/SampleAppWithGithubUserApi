@@ -1,24 +1,24 @@
 package jerry.githubuserapi.application.data
 
-import jerry.githubuserapi.application.model.ImmutableUser
-import org.eclipse.egit.github.core.client.GitHubClient
+import org.kohsuke.github.GHUser
+import org.kohsuke.github.GitHub
 
 data class SessionData(
-    val currentUser: CurrentUser = UnsignedIn
+    val signedOrUnsigned: SignedOrUnsigned = UnsignedIn
 ) {
     val isSignedIn: Boolean
-        get() = currentUser is SignedIn
+        get() = signedOrUnsigned is SignedIn
 
-    val gitHubClient: GitHubClient by lazy {
-        (currentUser as? SignedIn)?.gitHubClient ?: GitHubClient()
+    val github: GitHub by lazy {
+        (signedOrUnsigned as? SignedIn)?.gitHub ?: GitHub.offline()
     }
 }
 
-sealed class CurrentUser
+sealed class SignedOrUnsigned
 
 data class SignedIn(
-    val authenticatedUser: ImmutableUser,
-    val gitHubClient: GitHubClient
-) : CurrentUser()
+    val user: GHUser,
+    val gitHub: GitHub
+) : SignedOrUnsigned()
 
-object UnsignedIn : CurrentUser()
+object UnsignedIn : SignedOrUnsigned()
