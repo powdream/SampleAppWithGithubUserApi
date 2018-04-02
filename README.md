@@ -37,3 +37,8 @@ For more information, please refer to <http://unlicense.org>
 
 * https://github.com/eclipse/egit-github/tree/master/org.eclipse.egit.github.core
 * Eclipse Public License 1.0
+
+### EventBus
+
+* https://github.com/greenrobot/EventBus
+* Apache License, Version 2.0
