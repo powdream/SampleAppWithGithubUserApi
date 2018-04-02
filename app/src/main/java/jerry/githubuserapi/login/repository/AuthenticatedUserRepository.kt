@@ -19,7 +19,7 @@ class AuthenticatedUserRepository {
         try {
             LoginTrialResult.Success(userService.user)
         } catch (e: IOException) {
-            LoginTrialResult.Failure(e)
+            LoginTrialResult.Failure(e, userId, password)
         }
     }
 }

@@ -1,10 +1,7 @@
 package jerry.githubuserapi.login
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.os.Bundle
 import android.support.annotation.MainThread
-import android.view.View
 import android.widget.Toast
 import jerry.githubuserapi.BaseActivity
 import jerry.githubuserapi.BuildConfig
@@ -15,8 +12,8 @@ import jerry.githubuserapi.login.model.LoginFormSnapshot
 import jerry.githubuserapi.login.model.LoginTrialResult
 import jerry.githubuserapi.login.repository.AuthenticatedUserRepository
 import jerry.githubuserapi.login.viewcontroller.LoginFormViewController
+import jerry.githubuserapi.login.viewcontroller.LoginProgressViewController
 import jerry.githubuserapi.login.viewcontroller.SignInButtonViewController
-import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.android.UI
@@ -33,6 +30,7 @@ class LoginActivity : BaseActivity() {
 
     private lateinit var loginFormViewController: LoginFormViewController
     private lateinit var signInButtonViewController: SignInButtonViewController
+    private lateinit var loginProgressViewController: LoginProgressViewController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +45,10 @@ class LoginActivity : BaseActivity() {
             activityScopeEventBus,
             findViewById(R.id.email_sign_in_button),
             loginFormViewController
+        )
+        loginProgressViewController = LoginProgressViewController(
+            findViewById(R.id.login_form),
+            findViewById(R.id.login_progress)
         )
         activityScopeEventBus.register(this)
     }
@@ -71,7 +73,7 @@ class LoginActivity : BaseActivity() {
             validationResult.isPasswordFormatInvalid ->
                 loginFormViewController.onPasswordInvalid(validationResult.errorResId)
             else -> if (loginJob.compareAndSet(null, attemptLogin(snapshot))) {
-                showProgress(true)
+                loginProgressViewController.showProgress()
             }
         }
     }
@@ -84,24 +86,10 @@ class LoginActivity : BaseActivity() {
                 .getAuthenticatedUser(CommonPool, userId, password)
                 .await()
             when (loginTrialResult) {
-                is LoginTrialResult.Success -> {
-                    this@LoginActivity.dataManager.authenticatedUser = loginTrialResult.user
-                    if (BuildConfig.DEBUG) {
-                        Toast
-                            .makeText(
-                                this@LoginActivity,
-                                R.string.sign_in_success,
-                                Toast.LENGTH_SHORT
-                            )
-                            .show()
-                    }
-                }
-                is LoginTrialResult.Failure -> {
-                    loge(loginTrialResult.cause) { "Login failure: userId=$userId, password=$password" }
-                    loginFormViewController.onPasswordInvalid(R.string.error_incorrect_password)
-                }
+                is LoginTrialResult.Success -> onLoginSucceeded(loginTrialResult)
+                is LoginTrialResult.Failure -> onLoginFailed(loginTrialResult)
             }
-            showProgress(false)
+            loginProgressViewController.hideProgress()
         }
 
         // Set-up to clear ``loginJob`` on the job finished.
@@ -112,34 +100,20 @@ class LoginActivity : BaseActivity() {
         return job
     }
 
-    /**
-     * Shows the progress UI and hides the login form.
-     */
-    private fun showProgress(show: Boolean) {
-        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-        // for very easy animations. If available, use these APIs to fade-in
-        // the progress spinner.
-        val shortAnimTime =
-            resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
+    @MainThread
+    private fun onLoginSucceeded(loginSuccess: LoginTrialResult.Success) {
+        // Set the session information and exit from this activity.
+        dataManager.authenticatedUser = loginSuccess.user
+        finish()
+        if (BuildConfig.DEBUG) {
+            Toast.makeText(this, R.string.sign_in_success, Toast.LENGTH_SHORT).show()
+        }
+    }
 
-        login_form.visibility = if (show) View.GONE else View.VISIBLE
-        login_form.animate()
-            .setDuration(shortAnimTime)
-            .alpha((if (show) 0 else 1).toFloat())
-            .setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    login_form.visibility = if (show) View.GONE else View.VISIBLE
-                }
-            })
-
-        login_progress.visibility = if (show) View.VISIBLE else View.GONE
-        login_progress.animate()
-            .setDuration(shortAnimTime)
-            .alpha((if (show) 1 else 0).toFloat())
-            .setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    login_progress.visibility = if (show) View.VISIBLE else View.GONE
-                }
-            })
+    @MainThread
+    private fun onLoginFailed(loginFailure: LoginTrialResult.Failure) {
+        val (cause, userId, password) = loginFailure
+        loginFormViewController.onPasswordInvalid(R.string.error_incorrect_password)
+        loge(cause) { "Login failure: userId=$userId, password=$password" }
     }
 }

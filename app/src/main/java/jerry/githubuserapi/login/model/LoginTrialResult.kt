@@ -5,5 +5,9 @@ import java.io.IOException
 
 sealed class LoginTrialResult {
     class Success(val user: User) : LoginTrialResult()
-    class Failure(val cause: IOException) : LoginTrialResult()
+    data class Failure(
+        val cause: IOException,
+        val userId: String,
+        val password: String
+    ) : LoginTrialResult()
 }
