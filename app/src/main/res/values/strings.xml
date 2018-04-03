@@ -18,4 +18,5 @@
 
     <!-- Strings related to all user list -->
     <string name="content_description_avatar">Avatar</string>
+    <string name="error_fetch_failure">Obtaining data has failed.</string>
 </resources>

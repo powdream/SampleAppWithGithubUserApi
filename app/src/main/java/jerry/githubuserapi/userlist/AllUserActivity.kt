@@ -2,6 +2,7 @@ package jerry.githubuserapi.userlist
 
 import android.os.Bundle
 import android.support.annotation.MainThread
+import android.widget.Toast
 import jerry.githubuserapi.BaseActivity
 import jerry.githubuserapi.R
 import jerry.githubuserapi.userlist.model.UserListFetchResult
@@ -12,7 +13,6 @@ import jerry.githubuserapi.util.thread.ensureOnMainThread
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.channels.consumeEach
-import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 
 class AllUserActivity : BaseActivity() {
@@ -37,23 +37,18 @@ class AllUserActivity : BaseActivity() {
         }
     }
 
-    private var received = 0
-
     @MainThread
-    private fun onUserListFetchResultReceived(
-        userListFetchResult: UserListFetchResult
-    ) = ensureOnMainThread<Unit> {
-        logd {
-            "onUserListFetchResultReceived(): count=$received, result=$userListFetchResult"
-        }
+    private fun onUserListFetchResultReceived(result: UserListFetchResult) = ensureOnMainThread {
+        logd { "onUserListFetchResultReceived(): result=$result" }
+        when (result) {
+            is UserListFetchResult.NoMoreUser -> return // Do nothing
 
-        launch(UI) {
-            delay(200)
-            if (received++ < 10) {
-                userListViewModel.fetchMore()
-                logi {
-                    "next fetch requested!"
-                }
+            is UserListFetchResult.OnePageFetched ->
+                userListViewController.onMoreUserViewDataFetched(result.fetchedUserList)
+
+            is UserListFetchResult.Failure -> {
+                loge(result.cause) { "onUserListFetchResultReceived(): fetching failed." }
+                Toast.makeText(this, R.string.error_fetch_failure, Toast.LENGTH_SHORT).show()
             }
         }
     }

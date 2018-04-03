@@ -5,6 +5,8 @@ import android.support.annotation.MainThread
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import jerry.githubuserapi.userlist.list.UserListAdapter
+import jerry.githubuserapi.userlist.model.UserViewData
+import jerry.githubuserapi.util.thread.ensureOnMainThread
 
 @MainThread
 class UserListViewController(
@@ -22,5 +24,11 @@ class UserListViewController(
             /* reverseLayout = */ false
         )
         userList.adapter = userListAdapter
+    }
+
+    fun onMoreUserViewDataFetched(
+        fetchedUserViewDataList: List<UserViewData>
+    ) = ensureOnMainThread {
+        userListAdapter.onMoreUserViewDataFetched(fetchedUserViewDataList)
     }
 }
