@@ -54,6 +54,9 @@ dependencies {
     implementation "com.android.support.constraint:constraint-layout:${constraintLayoutLibVersion}"
     implementation 'com.android.support:multidex:1.0.3'
 
+    implementation "android.arch.lifecycle:extensions:${androidArchLifecycleVersion}"
+    implementation "android.arch.lifecycle:common-java8:${androidArchLifecycleVersion}"
+
     implementation 'org.kohsuke:github-api:1.92'
     implementation 'org.greenrobot:eventbus:3.1.1'
 

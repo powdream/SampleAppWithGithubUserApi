@@ -5,6 +5,7 @@ buildscript {
     ext.kotlin_coroutine_version = '0.21.2'
     ext.androidSupportLibVersion = '26.1.0'
     ext.constraintLayoutLibVersion = '1.0.2'
+    ext.androidArchLifecycleVersion = '1.1.1'
 
     repositories {
         google()

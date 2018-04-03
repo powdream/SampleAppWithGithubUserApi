@@ -1,5 +1,6 @@
 package jerry.githubuserapi.userlist.repository
 
+import android.arch.lifecycle.LifecycleOwner
 import android.content.Context
 import jerry.githubuserapi.application.dataManager
 import jerry.githubuserapi.userlist.model.UserListViewModel
@@ -12,13 +13,15 @@ import java.io.IOException
 class UserListViewModelRepository(
     context: Context,
     coroutineDispatcher: CoroutineDispatcher,
+    lifecycleOwner: LifecycleOwner,
     private val pageSize: Int = DEFAULT_PAGE_SIZE
 ) {
     private val gitHub: GitHub = context.dataManager.sessionData.github
 
-    val userListViewModel: UserListViewModel = UserListViewModel(coroutineDispatcher) {
-        createPagedUserList().iterator()
-    }
+    val userListViewModel: UserListViewModel =
+        UserListViewModel(coroutineDispatcher, lifecycleOwner) {
+            createPagedUserList().iterator()
+        }
 
     @Throws(IOException::class)
     private fun createPagedUserList(): PagedIterable<GHUser> =

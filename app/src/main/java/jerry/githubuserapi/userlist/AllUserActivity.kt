@@ -21,7 +21,11 @@ class AllUserActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_all_user)
 
-        userListViewModel = UserListViewModelRepository(this, CommonPool).userListViewModel
+        userListViewModel = UserListViewModelRepository(
+            context = this,
+            coroutineDispatcher = CommonPool,
+            lifecycleOwner = this
+        ).userListViewModel
         val userListFetchResultChannel = userListViewModel.refresh()
         launch(UI) {
             userListFetchResultChannel.consumeEach(::onUserListFetchResultReceived)

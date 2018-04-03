@@ -1,5 +1,9 @@
 package jerry.githubuserapi.userlist.model
 
+import android.arch.lifecycle.Lifecycle
+import android.arch.lifecycle.LifecycleObserver
+import android.arch.lifecycle.LifecycleOwner
+import android.arch.lifecycle.OnLifecycleEvent
 import android.support.annotation.MainThread
 import android.util.Log
 import jerry.githubuserapi.BuildConfig
@@ -27,6 +31,7 @@ sealed class UserListFetchResult {
 @MainThread
 class UserListViewModel(
     private val coroutineDispatcher: CoroutineDispatcher,
+    lifecycleOwner: LifecycleOwner,
     private val iteratorSupplier: () -> PagedIterator<GHUser>
 ) {
     private lateinit var userPagedIterator: PagedIterator<GHUser>
@@ -35,12 +40,18 @@ class UserListViewModel(
     private var hasMoreUser: Boolean = true
     private var fetchMoreJob: Job? = null
 
+    init {
+        lifecycleOwner.lifecycle.addObserver(object : LifecycleObserver {
+            @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+            fun onDestroy(source: LifecycleOwner) {
+                closeChannel()
+            }
+        })
+    }
+
     @Throws(IOException::class)
     fun refresh(): ReceiveChannel<UserListFetchResult> = ensureOnMainThread {
-        fetchMoreJob?.cancel()
-        fetchMoreJob = null
-        currentChannel?.close()
-        currentChannel = null
+        closeChannel()
 
         hasMoreUser = true
         userPagedIterator = iteratorSupplier()
@@ -79,6 +90,14 @@ class UserListViewModel(
         } catch (e: GHException) {
             UserListFetchResult.Failure(e)
         }
+    }
+
+    private fun closeChannel() {
+        fetchMoreJob?.cancel()
+        fetchMoreJob = null
+        currentChannel?.close()
+        currentChannel = null
+        hasMoreUser = false
     }
 
     private fun Job.clearOnCompletion(): Job = apply {
