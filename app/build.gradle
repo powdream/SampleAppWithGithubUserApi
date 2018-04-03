@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 26
@@ -44,6 +45,9 @@ kotlin {
 }
 
 dependencies {
+    kapt "android.arch.lifecycle:compiler:${androidArchLifecycleVersion}"
+    kapt "com.github.bumptech.glide:compiler:${glideVersion}"
+
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jre8:${kotlin_version}"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:${kotlin_coroutine_version}"
@@ -59,6 +63,10 @@ dependencies {
 
     implementation 'org.kohsuke:github-api:1.92'
     implementation 'org.greenrobot:eventbus:3.1.1'
+
+    implementation ("com.github.bumptech.glide:glide:${glideVersion}") {
+        exclude group: "com.android.support"
+    }
 
     testImplementation 'junit:junit:4.12'
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:${kotlin_version}"

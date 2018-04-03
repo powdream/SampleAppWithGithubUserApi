@@ -6,6 +6,7 @@ buildscript {
     ext.androidSupportLibVersion = '26.1.0'
     ext.constraintLayoutLibVersion = '1.0.2'
     ext.androidArchLifecycleVersion = '1.1.1'
+    ext.glideVersion = '4.6.1'
 
     repositories {
         google()
