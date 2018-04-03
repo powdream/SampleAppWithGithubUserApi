@@ -7,6 +7,7 @@ import jerry.githubuserapi.R
 import jerry.githubuserapi.userlist.model.UserListFetchResult
 import jerry.githubuserapi.userlist.model.UserListViewModel
 import jerry.githubuserapi.userlist.repository.UserListViewModelRepository
+import jerry.githubuserapi.userlist.viewcontroller.UserListViewController
 import jerry.githubuserapi.util.thread.ensureOnMainThread
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.android.UI
@@ -17,9 +18,13 @@ import kotlinx.coroutines.experimental.launch
 class AllUserActivity : BaseActivity() {
     private lateinit var userListViewModel: UserListViewModel
 
+    private lateinit var userListViewController: UserListViewController
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_all_user)
+
+        userListViewController = UserListViewController(findViewById(R.id.all_user_list))
 
         userListViewModel = UserListViewModelRepository(
             context = this,
