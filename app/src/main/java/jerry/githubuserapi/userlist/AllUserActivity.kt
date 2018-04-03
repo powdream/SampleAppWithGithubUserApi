@@ -30,13 +30,15 @@ class AllUserActivity : BaseActivity() {
 
         userListViewController = UserListViewController(
             activityScopeEventBus,
-            findViewById(R.id.all_user_list)
+            findViewById(R.id.all_user_list),
+            DEFAULT_PAGE_SIZE
         )
 
         val repository = UserListViewModelRepository(
             context = this,
             coroutineDispatcher = CommonPool,
-            lifecycleOwner = this
+            lifecycleOwner = this,
+            pageSize = DEFAULT_PAGE_SIZE
         )
         userListViewModel = repository.userListViewModel
         enableUserListViewModel()
@@ -84,5 +86,9 @@ class AllUserActivity : BaseActivity() {
                 Toast.makeText(this, R.string.error_fetch_failure, Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    companion object {
+        private const val DEFAULT_PAGE_SIZE = 30
     }
 }

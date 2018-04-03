@@ -13,17 +13,20 @@ import org.greenrobot.eventbus.EventBus
 @MainThread
 class UserListViewController(
     private val eventBus: EventBus,
-    private val userList: RecyclerView
+    private val userList: RecyclerView,
+    pageSize: Int
 ) {
     private val context: Context
         get() = userList.context
 
-    private val userListAdapter = UserListAdapter()
+    private val userListAdapter = UserListAdapter(eventBus)
     private val layoutManager = LinearLayoutManager(
         context,
         LinearLayoutManager.VERTICAL,
         /* reverseLayout = */ false
     )
+
+    private val twoPages: Int = pageSize shl 1
 
     init {
         userList.layoutManager = layoutManager
@@ -52,10 +55,6 @@ class UserListViewController(
     private fun isNearToBottomOfList(): Boolean = ensureOnMainThread {
         val itemCount = userListAdapter.itemCount
         val lastVisibleItemPosition = layoutManager.findLastCompletelyVisibleItemPosition()
-        return itemCount - lastVisibleItemPosition in 0..CONDITION_NEAR_TO_BOTTOM
-    }
-
-    companion object {
-        private const val CONDITION_NEAR_TO_BOTTOM = 10
+        return itemCount - lastVisibleItemPosition in 0..twoPages
     }
 }
