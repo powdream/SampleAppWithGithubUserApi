@@ -5,6 +5,7 @@ import android.support.annotation.MainThread
 import android.widget.Toast
 import jerry.githubuserapi.BaseActivity
 import jerry.githubuserapi.R
+import jerry.githubuserapi.userdetail.UserDetailActivity
 import jerry.githubuserapi.userlist.event.MoreUserDataRequiredEvent
 import jerry.githubuserapi.userlist.event.UserRowViewClickedEvent
 import jerry.githubuserapi.userlist.model.UserListFetchResult
@@ -66,7 +67,8 @@ class AllUserActivity : BaseActivity() {
     fun onUserRowViewClickedEvent(event: UserRowViewClickedEvent) {
         if (isFinishing) return
 
-
+        val intent = UserDetailActivity.createIntent(this, event.userViewData.loginId)
+        startActivity(intent)
     }
 
     private fun enableUserListViewModel() {

@@ -25,6 +25,10 @@
         <activity
             android:name=".userlist.AllUserActivity"
             android:label="@string/title_activity_all_user" />
+        <activity
+            android:name=".userdetail.UserDetailActivity"
+            android:label="@string/title_activity_user_detail"
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>
