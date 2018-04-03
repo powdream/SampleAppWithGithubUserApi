@@ -15,4 +15,7 @@
         completions."
     </string>
     <string name="sign_in_success">Successfully signed in.</string>
+
+    <!-- Strings related to all user list -->
+    <string name="content_description_avatar">Avatar</string>
 </resources>

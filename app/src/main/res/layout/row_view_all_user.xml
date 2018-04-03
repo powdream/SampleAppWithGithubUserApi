@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin">
+
+    <ImageView
+        android:id="@+id/row_view_all_user_avatar"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:contentDescription="@string/content_description_avatar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@android:drawable/sym_def_app_icon" />
+
+    <TextView
+        android:id="@+id/row_view_all_user_login_id"
+        style="@style/TextAppearance.AppCompat.Title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/row_view_all_user_avatar"
+        app:layout_constraintTop_toTopOf="@+id/row_view_all_user_avatar"
+        tools:text="Hello World" />
+
+    <TextView
+        android:id="@+id/row_view_all_user_html_url"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:ellipsize="end"
+        android:maxLines="2"
+        app:layout_constraintBottom_toBottomOf="@+id/row_view_all_user_avatar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/row_view_all_user_login_id"
+        app:layout_constraintTop_toBottomOf="@+id/row_view_all_user_login_id"
+        tools:text="https://github.com/igouss/github.com/igouss/github.com/igouss/github.com/igouss/github.com/igouss" />
+
+</android.support.constraint.ConstraintLayout>
