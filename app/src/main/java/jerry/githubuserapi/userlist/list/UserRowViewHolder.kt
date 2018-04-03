@@ -6,7 +6,6 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DecodeFormat
 import com.bumptech.glide.request.RequestOptions
 import jerry.githubuserapi.R
 import jerry.githubuserapi.userlist.event.UserRowViewClickedEvent
@@ -28,7 +27,6 @@ class UserRowViewHolder(
             .placeholder(android.R.drawable.sym_def_app_icon)
             .override(avatarImageView.layoutParams.width, avatarImageView.layoutParams.height)
             .fitCenter()
-            .format(DecodeFormat.PREFER_ARGB_8888)
     }
 
     private var currentUserViewData: UserViewData? = null
