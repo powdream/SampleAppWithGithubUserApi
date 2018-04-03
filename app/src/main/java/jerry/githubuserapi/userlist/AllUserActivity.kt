@@ -6,6 +6,7 @@ import android.widget.Toast
 import jerry.githubuserapi.BaseActivity
 import jerry.githubuserapi.R
 import jerry.githubuserapi.userlist.event.MoreUserDataRequiredEvent
+import jerry.githubuserapi.userlist.event.UserRowViewClickedEvent
 import jerry.githubuserapi.userlist.model.UserListFetchResult
 import jerry.githubuserapi.userlist.model.UserListViewModel
 import jerry.githubuserapi.userlist.repository.UserListViewModelRepository
@@ -56,9 +57,16 @@ class AllUserActivity : BaseActivity() {
         @Suppress("UNUSED_PARAMETER")
         ignore: MoreUserDataRequiredEvent
     ) {
-        if (hasMoreUser) {
-            userListViewModel.fetchMore()
-        }
+        if (isFinishing || !hasMoreUser) return
+
+        userListViewModel.fetchMore()
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onUserRowViewClickedEvent(event: UserRowViewClickedEvent) {
+        if (isFinishing) return
+
+
     }
 
     private fun enableUserListViewModel() {
@@ -71,6 +79,8 @@ class AllUserActivity : BaseActivity() {
 
     @MainThread
     private fun onUserListFetchResultReceived(result: UserListFetchResult) = ensureOnMainThread {
+        if (isFinishing) return
+
         logd { "onUserListFetchResultReceived(): result=$result" }
         when (result) {
             is UserListFetchResult.NoMoreUser -> {
