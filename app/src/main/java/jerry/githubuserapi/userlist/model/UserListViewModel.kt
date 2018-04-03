@@ -23,7 +23,7 @@ import java.io.IOException
 sealed class UserListFetchResult {
     object NoMoreUser : UserListFetchResult()
 
-    data class OnePageFetched(val fetchedUserList: List<GHUser>) : UserListFetchResult()
+    data class OnePageFetched(val fetchedUserList: List<UserViewData>) : UserListFetchResult()
 
     data class Failure(val cause: GHException) : UserListFetchResult()
 }
@@ -81,11 +81,11 @@ class UserListViewModel(
         if (!hasMoreUser) return UserListFetchResult.NoMoreUser
 
         return try {
-            hasMoreUser = async(coroutineDispatcher) { userPagedIterator.hasNext() }.await()
+            hasMoreUser = userPagedIterator.hasMoreUser()
             if (!hasMoreUser) {
                 UserListFetchResult.NoMoreUser
             } else {
-                UserListFetchResult.OnePageFetched(userPagedIterator.nextPage())
+                UserListFetchResult.OnePageFetched(userPagedIterator.nextUserViewDataPage())
             }
         } catch (e: GHException) {
             UserListFetchResult.Failure(e)
@@ -110,6 +110,12 @@ class UserListViewModel(
             }
         }
     }
+
+    private fun PagedIterator<GHUser>.nextUserViewDataPage(): List<UserViewData> =
+        nextPage().map { UserViewData.from(it) }
+
+    private suspend fun PagedIterator<GHUser>.hasMoreUser(): Boolean =
+        async(coroutineDispatcher) { hasNext() }.await()
 
     companion object {
         private const val TAG = "UserListViewModel"
