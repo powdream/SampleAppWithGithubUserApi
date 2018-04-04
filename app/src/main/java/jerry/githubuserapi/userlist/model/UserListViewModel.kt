@@ -69,12 +69,13 @@ class UserListViewModel(
             }
             return
         }
-        fetchMoreJob = launch(UI) {
-            val userListFetchResult = innerFetchMore()
-            currentChannel
-                ?.takeUnless(Channel<UserListFetchResult>::isClosedForSend)
-                ?.send(userListFetchResult)
-        }.clearOnCompletion()
+        fetchMoreJob = createFetchMoreJob().clearOnCompletion()
+    }
+
+    private fun createFetchMoreJob(): Job = launch(UI) {
+        val userListFetchResult = innerFetchMore()
+        currentChannel?.takeUnless(Channel<*>::isClosedForSend)
+            ?.send(userListFetchResult)
     }
 
     private suspend fun innerFetchMore(): UserListFetchResult {

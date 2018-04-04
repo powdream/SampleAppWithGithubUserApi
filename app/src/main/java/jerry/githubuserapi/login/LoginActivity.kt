@@ -85,9 +85,7 @@ class LoginActivity : BaseActivity() {
     private fun attemptLogin(snapshot: LoginFormSnapshot): Job {
         val job = launch(UI) {
             val (userId, password) = snapshot
-            val loginTrialResult = AuthenticatedUserRepository()
-                .getAuthenticatedUser(CommonPool, userId, password)
-                .await()
+            val loginTrialResult = tryToLogin(userId, password)
             when (loginTrialResult) {
                 is LoginTrialResult.Success -> onLoginSucceeded(loginTrialResult)
                 is LoginTrialResult.Failure -> onLoginFailed(loginTrialResult)
@@ -102,6 +100,11 @@ class LoginActivity : BaseActivity() {
 
         return job
     }
+
+    private suspend fun tryToLogin(userId: String, password: String): LoginTrialResult =
+        AuthenticatedUserRepository()
+            .getAuthenticatedUser(CommonPool, userId, password)
+            .await()
 
     @MainThread
     private fun onLoginSucceeded(loginSuccess: LoginTrialResult.Success) {
