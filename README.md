@@ -42,3 +42,8 @@ For more information, please refer to <http://unlicense.org>
 
 * https://github.com/greenrobot/EventBus
 * Apache License, Version 2.0
+
+### Glide
+
+* https://github.com/bumptech/glide
+* BSD, part MIT and Apache 2.0
