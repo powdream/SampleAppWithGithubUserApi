@@ -2,6 +2,7 @@ package jerry.githubuserapi.userdetail
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.support.annotation.MainThread
 import android.support.annotation.Size
@@ -41,7 +42,7 @@ class UserDetailActivity : BaseActivity() {
             supportActionBar ?: error("actionBar doesn't exist."),
             findViewById(R.id.user_detail_avatar),
             findViewById(R.id.user_detail_web_view),
-            findViewById(R.id.fab)
+            findViewById(R.id.user_detail_send_email)
         )
 
         loginId = parseIntent(intent)
@@ -74,11 +75,21 @@ class UserDetailActivity : BaseActivity() {
                 if (captureUserDetailViewModel?.email?.isNotEmpty() != true) {
                     userDetailViewController.onInvalidEmailButtonClicked()
                 } else {
-                    // TODO: Try to send e-mail.
+                    attemptToSendEmail(captureUserDetailViewModel.email)
                 }
             }
         }
     }
+
+    @MainThread
+    private fun attemptToSendEmail(@Size(min = 1L) email: String) =
+        Intent(Intent.ACTION_SENDTO)
+            .setData(Uri.parse("mailto:"))
+            .putExtra(Intent.EXTRA_EMAIL, email)
+            .takeIf {
+                it.resolveActivity(packageManager) != null
+            }
+            ?.let(::startActivity) ?: Unit
 
     @MainThread
     private fun attemptToFetchUserDetail(): Job = launch(UI) {
